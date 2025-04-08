@@ -23,6 +23,15 @@ jobs:
         -url=jdbc:postgresql://${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }} \
         -user=${{ secrets.DB_USER }} \
         -password=${{ secrets.DB_PASSWORD }}
+    - name: sosiski check 
+      run: |
+        psql -h ${{ secrets.DB_HOST }} -p ${{ secrets.DB_PORT }} \
+         -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -c
+        "SELECT o.date_created, SUM(op.quantity)
+        FROM orders AS o
+        JOIN order_product AS op ON o.id = op.order_id
+        WHERE o.status = 'shipped' AND o.date_created > NOW() - INTERVAL '7 DAY'
+        GROUP BY o.date_created;"
 
     ### Этот шаг оставьте без изменений
     - name: Download and setup autotests binaries
